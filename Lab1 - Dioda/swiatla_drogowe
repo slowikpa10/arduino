@@ -30,8 +30,8 @@ void setup()
 void loop()
 {
   unsigned long now = millis () ;
-  if (stan==0){
-    if(buttonEvent==true){
+  if (stan==0){ //sprawdza kolor 
+    if(buttonEvent==true){ //sprawdza czy guzik zostac wcisniety, jesli tak to go resetuje 
     buttonEvent=false;
     
     digitalWrite(led, LOW);
@@ -42,7 +42,7 @@ void loop()
     }
   }
 
-  if (stan==1){
+  else if (stan==1){
     buttonEvent = false;
     if (now - previousTime >=interval1){
     digitalWrite(led1, LOW);
