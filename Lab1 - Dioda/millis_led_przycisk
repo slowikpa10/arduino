@@ -1,0 +1,52 @@
+const int led = 8;
+const int led1 = 9;
+const int led2 = 10;
+
+const int button = 2;
+unsigned long previousTime = 0;
+unsigned long previousTime1 = 0;
+unsigned long previousTime2 = 0;
+
+int interval = 500;
+int interval1 = 100;
+int interval2 = 20;
+
+bool led_state= false;
+bool led_state1= false;
+bool led_state2= false;
+
+int poprzedni_stan = HIGH;
+
+unsigned long now = millis () ;
+void setup()
+{
+  pinMode(led, OUTPUT);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+
+  pinMode(button, INPUT_PULLUP);
+  
+}
+
+void loop()
+{
+  unsigned long now = millis () ;
+  if ( now - previousTime >= interval ) {
+    previousTime = now ;
+
+    led_state = !led_state;
+    digitalWrite(led, led_state);
+ }
+if ( now - previousTime1 >= interval1 ) {
+    previousTime1 = now ;
+
+    led_state1 = !led_state1;
+    digitalWrite(led1, led_state1);
+ }
+
+int aktualny_stan = digitalRead(button); //aktualny stan zawsze digitalRead
+if(poprzedni_stan == HIGH && aktualny_stan == LOW){
+  led_state2 = !led_state2;
+  digitalWrite(led2, led_state2);
+}
+}
