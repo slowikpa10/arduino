@@ -1,0 +1,66 @@
+const int led = 8;
+const int led1 = 9;
+const int led2 = 10;
+
+const int button = 2;
+unsigned long previousTime = 0;
+
+int interval1 = 1000;
+int interval2 = 3000;
+
+int stan =0;
+
+volatile bool buttonEvent = false ;
+void buttonISR(){
+  buttonEvent = true;
+}
+
+void setup()
+{
+  pinMode(led, OUTPUT);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+
+  pinMode(button, INPUT_PULLUP);
+  attachInterrupt ( digitalPinToInterrupt (button) , buttonISR , FALLING ) ;
+
+  digitalWrite(led, HIGH);
+}
+
+void loop()
+{
+  unsigned long now = millis () ;
+  if (stan==0){
+    if(buttonEvent==true){
+    buttonEvent=false;
+    
+    digitalWrite(led, LOW);
+    digitalWrite(led1, HIGH);
+
+    previousTime = now;
+    stan = 1;
+    }
+  }
+
+  if (stan==1){
+    buttonEvent = false;
+    if (now - previousTime >=interval1){
+    digitalWrite(led1, LOW);
+    digitalWrite(led2, HIGH);
+
+    previousTime = now;
+    stan =2;
+    }
+    
+ }
+ else{
+  buttonEvent=false;
+  if (now - previousTime >=interval2){
+    digitalWrite(led2, LOW);
+    digitalWrite(led, HIGH);
+
+    previousTime = now;
+    stan =0;
+    }
+ }
+}
