@@ -1,6 +1,6 @@
 const int led_czerwona = 8;
 
-const int button_r = 2;
+const int button_r = 2; //TYLKO D2 i D3
 volatile bool buttonEvent = false ;
 bool stan_diody = false;
 void buttonISR(){
