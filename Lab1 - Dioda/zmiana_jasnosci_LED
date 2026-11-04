@@ -1,0 +1,21 @@
+const int led_czerwona = 5;
+
+
+void setup()
+{
+  pinMode(led_czerwona, OUTPUT);
+  
+}
+
+void loop()
+{
+  
+for (int pwm=0; pwm <=255; pwm++){ 
+  analogWrite(led_czerwona, pwm); //daje mozliwosc plynnej zmiany, digitalWrite daje tylko stan LOW lub HIGH nic pomiedzy. W miejscu pwm jest value
+  delay(20);
+}
+for (int pwm=255; pwm <=0; pwm--){
+  analogWrite(led_czerwona, pwm);
+  delay(20);
+}
+}
