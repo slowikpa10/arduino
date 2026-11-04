@@ -1,0 +1,32 @@
+const int led_czerwona = 8;
+
+const int button_r = 4;
+
+int poprzedni_stan = HIGH; //niewcisniety przycisk 
+void setup()
+{
+  pinMode(led_czerwona, OUTPUT);
+  
+
+  pinMode(button_r, INPUT_PULLUP);
+  
+}
+
+void loop()
+{
+  
+int stan1 = digitalRead(button_r);
+delay(20);
+int stan2 = digitalRead(button_r);
+
+
+if (stan1==stan2){
+  if (poprzedni_stan==HIGH && stan2==LOW){
+    digitalWrite(led_czerwona, HIGH);
+  }
+  else{
+    digitalWrite(led_czerwona, LOW);
+  }
+}
+  
+}
