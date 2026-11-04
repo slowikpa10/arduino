@@ -1,0 +1,14 @@
+//Zapalanie diody i wyłączanie diody co sekundę. 
+const int LED_PIN =8;
+void setup()
+{
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop()
+{
+  digitalWrite(LED_PIN, HIGH);
+  delay(1000); // Wait for 1000 millisecond(s)
+  digitalWrite(LED_PIN, LOW);
+  delay(1000); // Wait for 1000 millisecond(s)
+}
