@@ -1,0 +1,28 @@
+const int led_czerwona = 8;
+
+const int button_r = 2;
+volatile bool buttonEvent = false ;
+bool stan_diody = false;
+void buttonISR(){
+  buttonEvent = true;
+}
+void setup()
+{
+  pinMode(led_czerwona, OUTPUT);
+  
+
+  pinMode(button_r, INPUT_PULLUP);
+  attachInterrupt ( digitalPinToInterrupt (button_r) , buttonISR , FALLING ) ;
+}
+
+void loop()
+{
+  
+if(buttonEvent==true){
+  buttonEvent=false;
+
+  stan_diody = !stan_diody;
+  digitalWrite(led_czerwona, stan_diody);
+}
+  
+}
