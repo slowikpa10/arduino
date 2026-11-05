@@ -1,1 +1,14 @@
+void setup () {
+Serial . begin (115200) ;
+Serial . println ( " PSW - Laboratorium 2 " ) ;
+Serial . println ( " Wpisz dowolny znak : " ) ;
+}
 
+void loop () {
+  if ( Serial . available () > 0) {
+String znak = Serial.readString () ; // Serial.read() dla char 
+
+Serial . print ( " Odebrano znak : " ) ;
+Serial . println ( znak ) ;
+}
+}
