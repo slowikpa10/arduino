@@ -11,3 +11,5 @@ void loop() {
     Serial.write(znak);
   }
 }
+
+//output: $GPGGA,172919.049,2327.973,S,05150.404,W,1,12,1.0,0.0,M,0.0,M,,*61
