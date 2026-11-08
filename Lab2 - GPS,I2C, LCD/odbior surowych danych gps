@@ -1,0 +1,13 @@
+void setup() {
+  Serial.begin(115200);       // Komunikacja z komputerem
+  Serial1.begin(9600);      // Komunikacja z GPS
+
+  Serial.println("Oczekiwanie na dane GPS...");
+}
+
+void loop() {
+  if (Serial1.available() > 0) {
+    char znak = Serial1.read();
+    Serial.write(znak);
+  }
+}
