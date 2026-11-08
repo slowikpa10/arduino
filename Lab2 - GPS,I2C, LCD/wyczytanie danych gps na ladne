@@ -1,0 +1,63 @@
+void czas_f(long val){
+  int godzina = val/1000;
+  int minuty = (val - (godzina*10000))/100;
+  int sekundy = (val - (godzina*10000) - (minuty*100));
+
+  Serial.print(godzina);
+  Serial.print(" : ");
+  Serial.print(minuty);
+  Serial.print(" : ");
+  Serial.print(sekundy);
+}
+
+double wspolrzedne(double val_stopnie){
+  int stopnie = (int)(val_stopnie/100);
+  int minuty = val_stopnie - stopnie*100;
+  double wynik = stopnie + minuty/60;
+  Serial.print(wynik);
+}
+
+void setup() {
+  Serial.begin(115200);       // Komunikacja z komputerem
+  Serial1.begin(9600);      // Komunikacja z GPS
+
+  Serial.println("Oczekiwanie na dane GPS...");
+}
+
+void loop() {
+  if (Serial1.available() > 0) {
+    String elementy_gps = Serial1.readStringUntil(',');
+    if(strstr(elementy_gps.c_str(), "GPGGA") !=NULL){
+      String czas = Serial1.readStringUntil(',');
+      long t = atol(czas.c_str());
+      String szerokosc = Serial1.readStringUntil(',');
+      long longitude = atol(szerokosc.c_str());
+      String ns = Serial1.readStringUntil(',');
+      String dlugosc  = Serial1.readStringUntil(',');
+      long latitude = atol(dlugosc.c_str());
+      String ew  = Serial1.readStringUntil(',');
+      String jakosc  = Serial1.readStringUntil(',');
+      long jak = atol(jakosc.c_str());
+      String satelity  = Serial1.readStringUntil(',');
+      long sat = atol(satelity.c_str());
+
+      Serial.println("        ");
+      Serial.print("Czas: ");
+      czas_f(t);
+      Serial.print("  | Szerokosc: ");
+      wspolrzedne(longitude); 
+      Serial.print(ns);
+      Serial.print("  | Dlugosc : ");
+      wspolrzedne(latitude);
+      Serial.print(ew);
+      Serial.print("  | Jakosc: ");
+      Serial.print(jak);
+      Serial.print("  | Satelity: ");
+      Serial.print(sat);
+    }
+  }
+
+  
+//output: Czas: 172 : 1568 : 54  | Szerokosc: 23.00S  | Dlugosc : 51.00W  | Jakosc: 1  | Satelity: 12
+
+}
