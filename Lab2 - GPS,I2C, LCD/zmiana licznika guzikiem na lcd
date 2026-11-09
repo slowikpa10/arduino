@@ -1,0 +1,32 @@
+#include <LiquidCrystal_I2C.h>
+
+#include <Wire.h>
+
+int poprzedni_stan = HIGH; //niewcisniety przycisk 
+const int BUTTON_PIN = 2;
+LiquidCrystal_I2C lcd (0x27 , 16 , 2) ;
+int licznik =0;
+
+void setup () {
+  pinMode ( BUTTON_PIN , INPUT_PULLUP ) ;
+ lcd . init () ;
+ lcd . backlight () ;
+
+ }
+
+void loop () {
+int stan1 = digitalRead(BUTTON_PIN);
+delay(20);
+int stan2 = digitalRead(BUTTON_PIN);
+  lcd . setCursor (0 , 0) ;
+    lcd . print ( "Licznik" ) ;
+  if(stan1==stan2){
+    if (poprzedni_stan==HIGH && stan2== LOW){
+      licznik++;
+    lcd . setCursor (0 , 1) ;
+    lcd . print (licznik) ;
+
+    }
+    poprzedni_stan = stan2; // WAŻNE!
+  }
+}
