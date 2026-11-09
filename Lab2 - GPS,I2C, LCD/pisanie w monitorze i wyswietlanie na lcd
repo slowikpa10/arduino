@@ -1,0 +1,25 @@
+#include <LiquidCrystal_I2C.h>
+
+#include <Wire.h>
+
+LiquidCrystal_I2C lcd (0x27 , 16 , 2) ;
+
+void setup () {
+  Serial.begin(115200);
+ lcd . init () ;
+ lcd . backlight () ;
+ Serial.print("Napisz cos ");
+
+ }
+
+void loop () {
+if(Serial.available() > 0){
+  String message = Serial.readStringUntil('\n');
+  message.trim();
+  lcd.clear();
+  lcd . setCursor (0 , 0) ;
+  lcd . print ("Odebrano") ;
+  lcd . setCursor (0 , 1) ;
+  lcd . print (message) ;
+}
+}
