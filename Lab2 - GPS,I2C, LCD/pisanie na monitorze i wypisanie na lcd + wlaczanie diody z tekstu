@@ -1,0 +1,44 @@
+#include <LiquidCrystal_I2C.h>
+
+#include <Wire.h>
+
+LiquidCrystal_I2C lcd (0x27 , 16 , 2) ;
+const int LED_PIN = 13;
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(LED_PIN, OUTPUT);
+
+  digitalWrite(LED_PIN, LOW);
+  lcd . init () ;
+   lcd . backlight () ;
+  Serial.println("Wpisz ON lub OFF");
+}
+
+void loop() {
+
+  if (Serial.available() > 0) {
+
+    String message = Serial.readStringUntil('\n');
+
+    message.trim();
+    lcd.clear();
+    lcd . setCursor (0 , 0) ;
+    lcd . print ("Odebrano") ;
+    
+
+    if (message == "ON" || message == "on") {
+      digitalWrite(LED_PIN, HIGH);
+      lcd . setCursor (0 , 1) ;
+      lcd . print (message) ;
+    }
+
+    if (message == "OFF" || message == "off") {
+      digitalWrite(LED_PIN, LOW);
+      lcd . setCursor (0 , 1) ;
+      lcd . print (message) ;
+      lcd.clear();
+    }
+  }
+}
