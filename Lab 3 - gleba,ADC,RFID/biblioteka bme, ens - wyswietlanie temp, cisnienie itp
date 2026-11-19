@@ -23,3 +23,22 @@ void setup(){
     ;
     }
   }
+void loop(){
+  Serial.print("Humidity: ");
+  Serial.print(mySensor.readFloatHumidity(),0);
+  Serial.print("Pressure: ");
+  Serial.print(mySensor.readFloatPressure()/100,0); //na hPa
+  Serial.print("Temp: ");
+  Serial.print(mySensor.readTempF(),2);
+  Serial.print("Air Quality Index (1-5): ");
+  Serial.print(myENS.getAQI());
+  Serial.print("Total Volatile Organic Compounds: ");
+  Serial.print(myENS.getTVOC());
+  Serial.print("ppb");
+  Serial.print("CO2 concentration: ");
+  Serial.print(myENS.getECO2());
+  Serial.print("ppm");
+  Serial.println();
+
+  delay(2000);
+}
