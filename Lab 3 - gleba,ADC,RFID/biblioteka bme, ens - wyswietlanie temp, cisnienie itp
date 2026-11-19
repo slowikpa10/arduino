@@ -1,0 +1,25 @@
+#include <Wire.h> 
+#include "SparkFunBME280.h"
+#include "SparkFun_ENS160.h"
+BME280 mySensor;
+SparkFun_ENS160 myENS;
+
+int ensStatus;
+
+void setup(){
+  Serial.begin(115200);
+  Serial.println("Reading basic values from BME280");
+  Wire1.begin();
+
+  if (mySensor.beginI2C(Wire1) == false){ //blad 
+    Serial.println("The sensor did not respond. Please check wiring");
+    while(1) //jako while(true)
+    ;
+    
+  }
+  if (!myENS.begin(Wire1)){
+    Serial.println("Could not communicate with the ENS160, check wiring");
+    while(1)
+    ;
+    }
+  }
