@@ -11,7 +11,7 @@ MFRC522 rfid(SS_PIN, RST_PIN);
 byte nuidPICC[4];
 BME280 mySensor;
 SparkFun_ENS160 myENS;
-
+const int SENSOR_PIN =A0;
 int ensStatus;
 
 void printHex(byte *buffer, byte bufferSize) { //pozwalaja sprawdzac jakie jest UID breloka i sprawdzic co nalezy wpisac w if loop 
@@ -66,6 +66,7 @@ bool isAuthorized(){
 }
 void setup() {
   Serial.begin(115200);
+  analogReadResolution(14);
   SPI.begin(); // Init SPI bus
   rfid.PCD_Init(); // Init MFRC522, czytnik 
   Serial.println(F("This code scan the MIFARE Classsic NUID."));
