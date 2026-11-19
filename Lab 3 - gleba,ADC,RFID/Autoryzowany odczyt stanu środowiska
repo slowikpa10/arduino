@@ -1,0 +1,106 @@
+#include <SPI.h>
+#include <MFRC522.h>
+#include <Wire.h> 
+#include "SparkFunBME280.h"
+#include "SparkFun_ENS160.h"
+
+#define SS_PIN 10
+#define RST_PIN 9
+
+MFRC522 rfid(SS_PIN, RST_PIN);
+byte nuidPICC[4];
+BME280 mySensor;
+SparkFun_ENS160 myENS;
+
+int ensStatus;
+
+void printHex(byte *buffer, byte bufferSize) { //pozwalaja sprawdzac jakie jest UID breloka i sprawdzic co nalezy wpisac w if loop 
+  for (byte i = 0; i < bufferSize; i++) {
+    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i], HEX); //zapisz szesnastkowy 
+  }
+}
+
+void printDec(byte *buffer, byte bufferSize) {
+  for (byte i = 0; i < bufferSize; i++) {
+    Serial.print(' ');
+    Serial.print(buffer[i], DEC); //zapis dziesietny 
+  }
+}
+
+float readSoilMoisture(){
+  int dryValue = 340;
+  int wetValue = 9840;
+
+  int raw = analogRead(SENSOR_PIN);
+  long moisture = map(raw, dryValue, wetValue, 0,100); //przelicza raw na skale procentowa, tutaj dryValue 340 jest rowne 0%, a max to weValue 9840 odp za 100%
+  moisture = constrain(moisture,0,100); //constrain ogranicza wynik od 0 do 100
+  return moisture;
+}
+void printEnvironment(){
+  Serial.print("Humidity: ");
+  Serial.print(mySensor.readFloatHumidity(),0);
+  Serial.print("Pressure: ");
+  Serial.print(mySensor.readFloatPressure()/100,0); //na hPa
+  Serial.print("Temp: ");
+  Serial.print(mySensor.readTempF(),2);
+  Serial.print("Air Quality Index (1-5): ");
+  Serial.print(myENS.getAQI());
+
+  delay(2000);
+}
+
+bool isAuthorized(){
+  if (rfid.uid.uidByte[0] != 165 || //mozna tez !=0xA5 w szesnatkowym 
+      rfid.uid.uidByte[1] != 3 ||
+      rfid.uid.uidByte[2] != 241 ||
+      rfid.uid.uidByte[3] != 209) {
+      Serial.println(F("DOSTEP NIEUDANY"));
+      return false;
+  }
+ 
+  else {
+    Serial.println("DOSTEP UDANY");
+    return true;
+  }
+}
+void setup() {
+  Serial.begin(115200);
+  SPI.begin(); // Init SPI bus
+  rfid.PCD_Init(); // Init MFRC522, czytnik 
+  Serial.println(F("This code scan the MIFARE Classsic NUID."));
+
+  Wire1.begin();
+
+  if (mySensor.beginI2C(Wire1) == false){ //blad 
+    Serial.println("The sensor did not respond. Please check wiring");
+    while(1) //jako while(true)
+    ;
+    
+  }
+  if (!myENS.begin(Wire1)){
+    Serial.println("Could not communicate with the ENS160, check wiring");
+    while(1)
+    ;
+    }
+  }
+}
+
+void loop() {
+  if (!rfid.PICC_IsNewCardPresent()) { //czy czytnik wykryl karte ?
+    return; // omija kolejny if jesli nie ma odczytu prawidlowego - wraca na poczatku loop
+  }
+
+  // Verify if the NUID has been readed
+  if (!rfid.PICC_ReadCardSerial()) { //probuje odczytac UID karty - poszcegolne bajty UID trafiaja do rfid.uid.uidbyte 
+    return;
+  }
+
+  if(isAuthorized()){
+    printEnvironment();
+  }
+
+  // Halt PICC
+  rfid.PICC_HaltA(); //wysyla karcie polecenie uspienia: nie wykryje od razu jako nowej karty jak bedziesz trzymac dlugo na czytniku
+
+}
