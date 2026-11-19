@@ -1,0 +1,63 @@
+#include <SPI.h>
+#include <MFRC522.h>
+
+#define SS_PIN 10
+#define RST_PIN 9
+
+MFRC522 rfid(SS_PIN, RST_PIN);
+byte nuidPICC[4];
+const int LED_PIN = 7;
+
+void printHex(byte *buffer, byte bufferSize) { //pozwalaja sprawdzac jakie jest UID breloka i sprawdzic co nalezy wpisac w if loop 
+  for (byte i = 0; i < bufferSize; i++) {
+    Serial.print(buffer[i] < 0x10 ? " 0" : " ");
+    Serial.print(buffer[i], HEX); //zapisz szesnastkowy 
+  }
+}
+
+void printDec(byte *buffer, byte bufferSize) {
+  for (byte i = 0; i < bufferSize; i++) {
+    Serial.print(' ');
+    Serial.print(buffer[i], DEC); //zapis dziesietny 
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  SPI.begin(); // Init SPI bus
+  rfid.PCD_Init(); // Init MFRC522, czytnik 
+  pinMode(LED_PIN, OUTPUT);
+  Serial.println(F("This code scan the MIFARE Classsic NUID."));
+}
+
+void loop() {
+  if (!rfid.PICC_IsNewCardPresent()) { //czy czytnik wykryl karte ?
+    return; // omija kolejny if jesli nie ma odczytu prawidlowego - wraca na poczatku loop
+  }
+
+  // Verify if the NUID has been readed
+  if (!rfid.PICC_ReadCardSerial()) { //probuje odczytac UID karty - poszcegolne bajty UID trafiaja do rfid.uid.uidbyte 
+    return;
+  }
+
+  if (rfid.uid.uidByte[0] != 165 || //mozna tez !=0xA5 w szesnatkowym 
+      rfid.uid.uidByte[1] != 3 ||
+      rfid.uid.uidByte[2] != 241 ||
+      rfid.uid.uidByte[3] != 209) {
+    Serial.println(F("DOSTEP NIEUDANY"));
+  }
+ 
+  else {
+    Serial.println("DOSTEP UDANY");
+    digitalWrite(LED_PIN, HIGH);
+    delay(1000);
+    digitalWrite(LED_PIN, LOW);
+    delay(1000);
+  }
+
+  // Halt PICC
+  rfid.PICC_HaltA(); //wysyla karcie polecenie uspienia: nie wykryje od razu jako nowej karty jak bedziesz trzymac dlugo na czytniku
+
+  // Stop encryption on PCD
+  rfid.PCD_StopCrypto1(); // nie jest to wazne, wylacza tryb szyfrowania 
+}
