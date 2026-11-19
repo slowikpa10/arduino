@@ -1,0 +1,21 @@
+const int SENSOR_PIN =A0;
+
+void setup(){
+  Serial.begin(115200);
+  analogReadResolution(14); //rozdzielczosc 14 bitow
+}
+
+void loop(){
+  int dryValue = 340;
+  int wetValue = 9840;
+
+  int raw = analogRead(SENSOR_PIN);
+  long moisture = map(raw, dryValue, wetValue, 0,100); //przelicza raw na skale procentowa, tutaj dryValue 340 jest rowne 0%, a max to weValue 9840 odp za 100%
+  moisture = constrain(moisture,0,100); //constrain ogranicza wynik od 0 do 100
+
+  Serial.print("Odczyt surowy:");
+  Serial.print(raw);
+  Serial.print("OBliczona wilgotnosc podloza w procentach:");
+  Serial.print(moisture);
+  delay(200);
+}
