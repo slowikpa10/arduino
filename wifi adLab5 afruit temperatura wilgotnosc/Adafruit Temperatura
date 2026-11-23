@@ -2,6 +2,8 @@
 #include "config.h"
 
 AdafruitIO_Feed *temperature = io.feed("temperature"); //nasz FEED w adafruit
+int interval = 500;
+unsigned long previousTime = 0;
 
 void setup() {
   // put your setup code here, to run once:
@@ -23,16 +25,19 @@ void setup() {
 }
 
 void loop() {
-  int raw = analogRead(A0);
-  float voltage = raw * 5.0 / 1023.0;
-  float temperatureC = voltage * 100.0;
+  io.run(); // obsługuje komunikację z Adafruit IO. poza millis 
+  unsigned long now = millis () ;
+  if ( now - previousTime >= interval ) {
+    previousTime = now ;
+    int raw = analogRead(A0);
+    float voltage = raw * 5.0 / 1023.0;
+    float temperatureC = voltage * 100.0;
+  
+    
+  
+    Serial.print("sending -> ");
+    Serial.println(temperatureC);
+    temperature->save(temperatureC); //wysyła wartość temperatury do feedu Adafruit IO.
 
-  io.run(); // obsługuje komunikację z Adafruit IO.
-
-  Serial.print("sending -> ");
-  Serial.println(temperatureC);
-  temperature->save(temperatureC); //wysyła wartość temperatury do feedu Adafruit IO.
-
-  // increment the count by 1
-  delay(5000);
+}
 }
