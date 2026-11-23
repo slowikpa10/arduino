@@ -1,19 +1,19 @@
 
 #include "config.h"
 
-AdafruitIO_Feed *temperature = io.feed("temperature");
+AdafruitIO_Feed *temperature = io.feed("temperature"); //nasz FEED w adafruit
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  while (!Serial)
-    ;
+  while (!Serial) //Dopóki komunikacja Serial nie jest gotowa, czekaj.
+    ; //Samotny średnik ; oznacza, że pętla nie wykonuje żadnych dodatkowych instrukcji.
 
   Serial.print("Connecting to Adafruit IO");
 
-  io.connect();
+  io.connect(); //polaczenie w adafruit 
 
-  while (io.status() < AIO_CONNECTED) {
+  while (io.status() < AIO_CONNECTED) { //czekanie na polaczenie 
     Serial.print(".");
     delay(500);
   }
@@ -27,12 +27,11 @@ void loop() {
   float voltage = raw * 5.0 / 1023.0;
   float temperatureC = voltage * 100.0;
 
-  // put your main code here, to run repeatedly:
-  io.run();
+  io.run(); // obsługuje komunikację z Adafruit IO.
 
   Serial.print("sending -> ");
   Serial.println(temperatureC);
-  temperature->save(temperatureC);
+  temperature->save(temperatureC); //wysyła wartość temperatury do feedu Adafruit IO.
 
   // increment the count by 1
   delay(5000);
