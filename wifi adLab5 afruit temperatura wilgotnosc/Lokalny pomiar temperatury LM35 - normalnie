@@ -1,0 +1,26 @@
+const int SENSOR_PIN = A0 ;
+
+unsigned long previousTime = 0;
+int interval = 5000;
+void setup(){
+  Serial.begin(115200);
+
+}
+
+
+void loop(){
+  unsigned long now = millis () ;
+  if ( now - previousTime >= interval ) {
+    previousTime = now ;
+
+  int raw = analogRead (SENSOR_PIN) ;
+  float voltage = raw * 5.0 / 1023.0;
+  float temperatureC = voltage * 100.0;
+  Serial.print("ADC: ");
+  Serial.print(raw);
+  Serial.println("Voltage: ");
+  Serial.print(voltage);
+  Serial.println("Temp w C: ");
+  Serial.print(temperatureC);
+  }
+}
