@@ -1,0 +1,38 @@
+#include <Servo.h>
+
+Servo myServo;
+
+const int SERVO_PIN = 6;
+const int JOY_X = A0;
+const int JOY_Y = A1;
+
+const int rawMin = 0;
+const int rawMax = 1023;
+
+int raw;
+
+int kat(){ //int, bo zwracam angle jako int 
+  int angle = map(raw, rawMin, rawMax, 0, 180);
+  angle = constrain(angle, 0, 180);
+  return angle;
+}
+
+void setup(){
+  Serial.begin(115200);
+  myServo.attach(SERVO_PIN);
+}
+
+void loop(){
+
+  raw = analogRead(JOY_X);
+
+  Serial.print("ADC: ");
+  Serial.print(raw);
+
+  Serial.print(" Kat: ");
+  Serial.println(kat());
+
+  myServo.write(kat()); //polecenie wyslane do servo 
+
+  delay(200);
+}
