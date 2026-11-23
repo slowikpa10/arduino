@@ -1,0 +1,72 @@
+#include <Servo.h>
+const int TRIG_PIN = 7; //uruchamia pomiar
+const int ECHO_PIN = 8; //mierzy czas
+const int SERVO_PIN = 6;
+Servo myServo;
+
+unsigned long previousTime = 0;
+int interval = 100;
+
+bool open = false; // kiedy chcesz zapamiętać informację, która może mieć tylko dwa stany: true albo false
+
+float measureDistanceCm() {
+
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(TRIG_PIN, HIGH); //rozpoczynamy pomiar 
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW); //konczymy pomiar 
+
+  unsigned long duration = pulseIn(ECHO_PIN, HIGH, 30000); //mierzy, jak długo sygnał na pinie ECHO pozostaje w stanie HIGH, i zapisuje ten czas
+
+  if (duration == 0) {
+    return -1;
+  }
+
+
+  return duration/58.0;
+}
+
+void setup() {
+  Serial.begin(115200);
+  myServo.attach(SERVO_PIN);
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+}
+
+void loop() {
+
+  unsigned long now = millis () ;
+  if ( now - previousTime >= interval ) {
+    previousTime = now ;
+
+    float distance = measureDistanceCm();
+
+  if (distance >= 0){
+    if (distance <20){
+      open = true;
+    }
+    else if (distance > 30)
+      open = false;
+  }
+  
+  if (open){
+    myServo.write(20);
+    Serial.print("OPEN  ");
+  }
+  else{
+    myServo.write(90);
+    Serial.print("CLOSED:  ");
+  }
+
+  Serial.print("Odleglosc: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+
+
+    
+ }
+  
+
+}
