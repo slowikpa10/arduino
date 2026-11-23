@@ -1,0 +1,39 @@
+
+#include "config.h"
+
+AdafruitIO_Feed *temperature = io.feed("temperature");
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(115200);
+  while (!Serial)
+    ;
+
+  Serial.print("Connecting to Adafruit IO");
+
+  io.connect();
+
+  while (io.status() < AIO_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+
+  Serial.println();
+  Serial.println(io.statusText());
+}
+
+void loop() {
+  int raw = analogRead(A0);
+  float voltage = raw * 5.0 / 1023.0;
+  float temperatureC = voltage * 100.0;
+
+  // put your main code here, to run repeatedly:
+  io.run();
+
+  Serial.print("sending -> ");
+  Serial.println(temperatureC);
+  temperature->save(temperatureC);
+
+  // increment the count by 1
+  delay(5000);
+}
