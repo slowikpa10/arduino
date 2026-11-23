@@ -1,0 +1,41 @@
+
+#include <WiFiS3.h>
+
+#include "arduino_secrets.h"
+
+char ssid[] = SECRET_SSID;       // your network SSID (name)
+char pass[] = SECRET_PASS;       // your network password
+int status = WL_IDLE_STATUS;
+
+void setup() {
+  Serial.begin(9600);
+
+  while (status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to WPA SSID: ");
+    Serial.println(ssid);
+
+    status = WiFi.begin(ssid, pass);
+
+    delay(1000);
+  }
+
+  // you're connected now, so print out the data:
+  Serial.print("You're connected to the network");
+}
+
+void loop() {
+  Serial.print("SSID: ");
+  Serial.println(WiFi.SSID());
+
+  long rssi = WiFi.RSSI();
+  Serial.print("signal strength (RSSI):");
+  Serial.println(rssi);
+  Serial.print("dBm");
+
+  IPAddress ip = WiFi.localIP();
+  Serial.print("IP Address: ");
+
+  Serial.println(ip);
+  delay(2000);
+}
+
