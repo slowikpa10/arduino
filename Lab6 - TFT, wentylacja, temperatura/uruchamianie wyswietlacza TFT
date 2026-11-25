@@ -1,0 +1,34 @@
+
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
+
+const int TFT_CS = 10; //Wybiera wyświetlacz do komunikacji
+const int TFT_DC = 7; //Określa, czy wysyłamy komendę, czy dane
+const int TFT_BL = 9; //Steruje podświetleniem
+const int TFT_RST = -1; //Nie używamy osobnego pinu resetowania
+
+Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
+
+void setup() {
+  pinMode(TFT_BL, OUTPUT); //pin 9 jako wyjscie Bo Arduino ma sterować podświetleniem ekranu.
+  digitalWrite(TFT_BL, HIGH); // stan wysoki- włączenie podświetlenia wyświetlacza
+
+  tft.init(240, 320);
+  tft.setRotation(1); //1 -obrot 90, 2-180, 3-270, 0-domyslna
+  tft.fillScreen(ST77XX_BLACK);
+
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(2);
+  tft.setCursor(10, 15);
+  tft.print("PSW - Lab 6");
+  tft.setCursor(10, 40);
+  tft.print("PSW - Lab 7");
+  tft.setCursor(10, 65);
+  tft.print("PSW - Lab 8");
+  tft.drawLine(0,100,319,100,ST77XX_WHITE);
+}
+
+void loop() { //Gdybyśmy chcieli na przykład co sekundę aktualizować temperaturę na ekranie, wtedy umieścilibyśmy odpowiedni kod w loop().
+
+}
