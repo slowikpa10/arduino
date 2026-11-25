@@ -1,0 +1,77 @@
+#include "config.h"
+
+const int MOTOR_PWM = 6;
+const int MOTOR_DIR = 2;
+
+AdafruitIO_Feed *fanOn = io.feed("fan_on");
+AdafruitIO_Feed *fanSpeedFeed = io.feed("fan_speed");
+
+bool fanEnabled = false; //Typ bool może przyjmować tylko dwie wartości: true lub false.
+int fanSpeed = 0;
+
+void setFanSpeed(int percent) {
+    percent = constrain(percent, 0, 100);
+    int pwm = map(percent, 0, 100, 0, 255);
+
+    digitalWrite(MOTOR_DIR, LOW);
+    analogWrite(MOTOR_PWM, pwm);
+}
+
+void updateFan() { //Odpowiada za podejmowanie decyzji, czy wentylator powinien pracować
+    if (fanEnabled) { //if (fanEnabled == true)
+        setFanSpeed(fanSpeed);
+    }
+    else {
+        setFanSpeed(0);
+    }
+}
+
+void handleFanOn(AdafruitIO_Data *data) { //obsługę przycisku ON/OFF w Adafruit IO.
+    int value = data->toInt();
+
+    if (value == 1) {
+        fanEnabled = true;
+    }
+    else {
+        fanEnabled = false;
+    }
+
+    updateFan(); //Wywołujemy funkcję, która zastosuje nowy stan do silnika.
+}
+
+void handleFanSpeed(AdafruitIO_Data *data) { //odpowiada za obsługę suwaka prędkości
+    int value = data->toInt();
+
+    fanSpeed = constrain(value, 0, 100);
+    updateFan();
+}
+
+void setup() {
+    Serial.begin(115200);
+
+    pinMode(MOTOR_DIR, OUTPUT);
+    pinMode(MOTOR_PWM, OUTPUT);
+    setFanSpeed(0); //wyłącza silnik na początku działania programu
+
+    fanOn->onMessage(handleFanOn);
+    fanSpeedFeed->onMessage(handleFanSpeed);
+
+    io.connect();
+
+    Serial.print("Laczenie z Adafruit IO");
+    while (io.status() < AIO_CONNECTED) {
+        Serial.print(".");
+        delay(500);
+    }
+
+    Serial.println();
+    Serial.println(io.statusText());
+
+    // Pobranie ostatnich wartosci zapisanych w feedach
+    fanOn->get();
+    fanSpeedFeed->get();
+}
+
+void loop() {
+    io.run();
+}
