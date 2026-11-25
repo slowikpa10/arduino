@@ -1,0 +1,19 @@
+const int MOTOR_PWM = 6;
+const int MOTOR_DIR = 2;
+
+void setFanSpeed ( int percent ) {
+ percent = constrain ( percent , 0 , 100) ; //Funkcja zabezpiecza nas przed podaniem wartości spoza zakresu 0–100%.
+ int pwm = map ( percent , 0 , 100 , 0 , 255) ; //Arduino domyślnie przyjmuje w analogWrite() wartości od 0 do 255, a my chcemy podawać procenty od 0 do 100.
+
+ digitalWrite ( MOTOR_DIR , LOW ) ; // Odpowiada za kierunek obrotów silnika.   
+ analogWrite ( MOTOR_PWM , pwm ) ; // Odpowiada za regulację prędkości obrotów silnika poprzez PWM | ANALOGWRITE ZAWSZE PWM 
+}
+
+void setup(){
+  pinMode(MOTOR_PWM, OUTPUT); //pinMode() konfiguruje pin, ale nie ustawia jeszcze konkretnego sygnału 
+  pinMode(MOTOR_DIR, OUTPUT);
+}
+
+void loop(){
+  setFanSpeed(20);
+}
