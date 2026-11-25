@@ -1,0 +1,180 @@
+#include "config.h"
+#include <WiFiS3.h>
+#include "AdafruitIO_WiFi.h"
+#include <Wire.h>
+#include "SparkFunBME280.h"
+#include "SparkFun_ENS160.h"
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
+
+BME280 mySensor;
+SparkFun_ENS160 myENS;
+
+const int TFT_CS = 10;
+const int TFT_DC = 7;
+const int TFT_BL = 9;
+const int TFT_RST = -1;
+
+Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
+
+const int MOTOR_PWM = 6;
+const int MOTOR_DIR = 2;
+
+unsigned long previousTime = 0;
+int interval = 10000;
+
+AdafruitIO_Feed* fanOn = io.feed("fan_on");
+AdafruitIO_Feed* fanSpeedFeed = io.feed("fan_speed");
+AdafruitIO_Feed* temperatura = io.feed("temperatura");
+AdafruitIO_Feed* aqi = io.feed("aqi");
+
+bool fanEnabled = false;
+int fanSpeed = 0;
+
+void setFanSpeed(int percent) {
+    percent = constrain(percent, 0, 100);
+    int pwm = map(percent, 0, 100, 0, 255);
+
+    digitalWrite(MOTOR_DIR, LOW);
+    analogWrite(MOTOR_PWM, pwm);
+}
+
+void updateFan() {
+    if (fanEnabled) {
+        setFanSpeed(fanSpeed);
+    } else {
+        setFanSpeed(0);
+    }
+}
+
+void handleFanOn(AdafruitIO_Data* data) {
+    int value = data->toInt();
+
+    if (value == 1) {
+        fanEnabled = true;
+    } else {
+        fanEnabled = false;
+    }
+
+    updateFan();
+}
+
+void handleFanSpeed(AdafruitIO_Data* data) {
+    int value = data->toInt();
+    fanSpeed = constrain(value, 0, 100);
+    updateFan();
+}
+
+void setup() {
+    Serial.begin(115200);
+    Serial.println("Reading basic values from BME280");
+
+    pinMode(TFT_BL, OUTPUT);
+    pinMode(MOTOR_DIR, OUTPUT);
+    pinMode(MOTOR_PWM, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);
+
+    Wire1.begin();
+    tft.init(240, 320);
+    tft.setRotation(1);
+    tft.fillScreen(ST77XX_BLACK);
+
+    tft.setTextColor(ST77XX_WHITE);
+    tft.setTextSize(2);
+    tft.drawRect(5, 5, 310, 210, ST77XX_CYAN);
+    tft.setCursor(10, 15);
+    tft.print("System wentylacji");
+
+    if (mySensor.beginI2C(Wire1) == false) {
+        Serial.println("The sensor did not respond. Please check wiring");
+        while (1);
+    }
+
+    if (!myENS.begin(Wire1)) {
+        Serial.println("Could not communicate with the ENS160, check wiring");
+        while (1);
+    }
+
+    setFanSpeed(0);
+
+    fanOn->onMessage(handleFanOn);
+    fanSpeedFeed->onMessage(handleFanSpeed);
+
+    io.connect();
+
+    Serial.print("Laczenie z Adafruit IO");
+
+    while (io.status() < AIO_CONNECTED) {
+        Serial.print(" . ");
+        delay(500);
+    }
+
+    Serial.println();
+    Serial.println(io.statusText());
+
+    // Pobranie ostatnich wartosci zapisanych w feedach
+    fanOn->get();
+    fanSpeedFeed->get();
+    temperatura->get();
+    aqi->get();
+}
+
+void loop() {
+    unsigned long now = millis();
+
+    if (now - previousTime >= interval) {
+
+        io.run();
+
+        tft.fillRect(10, 30, 300, 170, ST77XX_BLACK);
+
+        tft.setCursor(10, 45);
+        tft.print("Humidity:");
+        tft.setCursor(125, 45);
+        tft.print(mySensor.readFloatHumidity(), 0);
+        tft.setCursor(170, 45);
+        tft.print("%");
+
+        tft.setCursor(10, 75);
+        tft.print("Pressure: ");
+        tft.setCursor(130, 75);
+        tft.print(mySensor.readFloatPressure() / 100, 0); // na hPa
+        tft.setCursor(170, 75);
+        tft.print("hPa");
+
+        tft.setCursor(10, 105);
+        tft.print("Temp: ");
+        tft.setCursor(125, 105);
+        tft.print(mySensor.readTempC(), 2);
+        tft.setCursor(190, 105);
+        tft.print("C");
+
+        tft.setCursor(10, 135);
+        tft.print("Air Quality: ");
+        tft.setCursor(180, 135);
+        tft.print(myENS.getAQI());
+
+        tft.setCursor(10, 165);
+        tft.print("Wentylator: ");
+        tft.setCursor(130, 165);
+
+        if (fanEnabled == true) {
+            tft.print("ON");
+        } else {
+            tft.print("OFF");
+        }
+
+        tft.setCursor(10, 195);
+        tft.print("Predkosc: ");
+        tft.setCursor(130, 195);
+        tft.print(fanSpeed);
+        tft.setCursor(180, 195);
+        tft.print("%");
+
+        temperatura->save(mySensor.readTempC());
+        aqi->save(myENS.getAQI());
+
+        previousTime = now;
+    }
+}
