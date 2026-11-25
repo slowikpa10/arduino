@@ -1,0 +1,78 @@
+#include <Wire.h>
+#include "SparkFunBME280.h"
+#include "SparkFun_ENS160.h"
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7789.h>
+
+BME280 mySensor;
+SparkFun_ENS160 myENS;
+
+const int TFT_CS = 10;
+const int TFT_DC = 7;
+const int TFT_BL = 9;
+const int TFT_RST = -1;
+
+Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_RST);
+int ensStatus;
+
+void setup() {
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH);
+
+    Serial.begin(115200);
+    Serial.println("Reading basic values from BME280");
+    Wire1.begin();
+
+    tft.init(240, 320);
+    tft.setRotation(1);
+    tft.fillScreen(ST77XX_BLACK);
+
+    tft.setTextColor(ST77XX_WHITE);
+    tft.setTextSize(2);
+    tft.drawRect(5, 5, 310, 210, ST77XX_CYAN);
+    tft.setCursor(10, 15);
+    tft.print("System wentylacji");
+
+    if (mySensor.beginI2C(Wire1) == false) { //blad
+        Serial.println("The sensor did not respond. Please check wiring");
+        while (1) //jako while(true)
+            ;
+    }
+
+    if (!myENS.begin(Wire1)) {
+        Serial.println("Could not communicate with the ENS160, check wiring");
+        while (1)
+            ;
+    }
+}
+
+void loop() {
+    tft.fillRect(10, 30, 300, 170, ST77XX_BLACK);
+
+    tft.setCursor(10, 45);
+    tft.print("Humidity:");
+    tft.setCursor(125, 45);
+    tft.print(mySensor.readFloatHumidity(), 0);
+    tft.setCursor(170, 45);
+    tft.print("%");
+
+    tft.setCursor(10, 75);
+    tft.print("Pressure: ");
+    tft.setCursor(130, 75);
+    tft.print(mySensor.readFloatPressure() / 100, 0); //na hPa
+    tft.setCursor(170, 75);
+    tft.print("hPa");
+
+    tft.setCursor(10, 105);
+    tft.print("Temp: ");
+    tft.setCursor(125, 105);
+    tft.print(mySensor.readTempC(), 2);
+    tft.setCursor(190, 105);
+    tft.print("C");
+
+    tft.setCursor(10, 135);
+    tft.print("Air Quality: ");
+    tft.setCursor(180, 135);
+    tft.print(myENS.getAQI());
+}
