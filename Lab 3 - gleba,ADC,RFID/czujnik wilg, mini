@@ -1,0 +1,95 @@
+#include <Servo.h>
+#include <LiquidCrystal_I2C.h>
+
+#include <Wire.h>
+
+LiquidCrystal_I2C lcd (0x27 , 16 , 2) ;
+Servo myServo;
+const int SERVO_PIN = 6;
+const int SENSOR_PIN =A0;
+const int button = 2;
+
+int licznik = 0;
+int poprzedni_stan = HIGH;
+bool open = false;
+unsigned long previousTime = 0;
+int interval = 500;
+void setup(){
+  Serial.begin(115200);
+  analogReadResolution(14); //rozdzielczosc 14 bitow
+  myServo.attach(SERVO_PIN);
+  pinMode(button, INPUT_PULLUP);
+  lcd.init();
+  lcd.backlight();
+  myServo.write(90);
+}
+float readSoilMoisture(){
+  int dryValue = 340;
+  int wetValue = 9840;
+
+  int raw = analogRead(SENSOR_PIN);
+  long moisture = map(raw, dryValue, wetValue, 0,100); //przelicza raw na skale procentowa, tutaj dryValue 340 jest rowne 0%, a max to weValue 9840 odp za 100%
+  moisture = constrain(moisture,0,100); //constrain ogranicza wynik od 0 do 100
+  Serial.println(raw);
+  return moisture;
+}
+void loop(){
+  unsigned long now = millis();
+
+  int stan1 = digitalRead(button);
+  delay(20);
+  int stan2 = digitalRead(button);
+  if (stan1 == stan2) {
+
+        if (poprzedni_stan == HIGH && stan2 == LOW) {
+
+            licznik++;
+        }
+    poprzedni_stan = stan2;
+  }
+  
+  float soilMoisture = readSoilMoisture(); //wywoluje funkcje
+  if (licznik == 1) {
+    
+    if (soilMoisture < 35){
+      open = true;
+    }
+    else {
+      open = false;
+    }
+  }
+            
+  else if (licznik == 2) { //otworzenie
+    open =true;
+  }
+  else if (licznik == 3) { //zamkniecie
+    open = false;
+    licznik = 0; //Zerujemy licznik, żeby następne naciśnięcie znowu było traktowane jako pierwsze.
+  }
+    if (open){
+    myServo.write(20);
+    }
+  else{
+    myServo.write(90);
+    }
+     if (now - previousTime >= interval) {
+        previousTime = now;
+
+        lcd.setCursor(0, 0);
+        lcd.print("Wilgotnosc:     ");
+        lcd.setCursor(12, 0);
+        lcd.print(soilMoisture, 0);
+        lcd.print("%");
+
+        lcd.setCursor(0, 1);
+
+        if (open) {
+            lcd.print("Stan: OPEN      ");
+        }
+        else {
+            lcd.print("Stan: CLOSED    ");
+        }
+    }   
+  
+  
+}
