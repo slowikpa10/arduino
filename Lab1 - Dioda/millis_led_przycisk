@@ -11,11 +11,11 @@ int interval = 500;
 int interval1 = 100;
 int interval2 = 20;
 
-bool led_state= false;
+bool led_state= false; //stan poczatkowy diody 
 bool led_state1= false;
 bool led_state2= false;
 
-int poprzedni_stan = HIGH;
+int poprzedni_stan = HIGH; //Zapamiętuje poprzedni stan przycisku
 
 unsigned long now = millis () ;
 void setup()
